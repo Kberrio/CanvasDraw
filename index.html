@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <title>Pintura de imagen</title>
+  </head>
+
+  <body>
+    <h1>Pintura de imagen</h1>
+    <p>Cargue una imagen y use su mouse para pintar en ella:</p>
+
+    <input type="file" id="image-file" accept="image/*" />
+    <button id="save-button">Guardar imagen</button>
+    <br />
+    <canvas id="image-canvas" width="400" height="400"></canvas>
+    
+    <script>
+      // Obtener los elementos de archivo e imagen
+      const input = document.getElementById('image-file');
+      const canvas = document.getElementById('image-canvas');
+
+      // Cuando el usuario selecciona una imagen, cargar la imagen en el lienzo
+      input.addEventListener('change', function () {
+        const reader = new FileReader();
+        reader.onload = function () {
+          const img = new Image();
+          img.onload = function () {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            canvas.getContext('2d').drawImage(img, 0, 0);
+          };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(input.files[0]);
+      });
+
+      // Configurar el lienzo para pintar
+      const ctx = canvas.getContext('2d');
+      ctx.lineWidth = 5;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      // Configurar los parámetros de pintura
+      let isPainting = false;
+      let lastX = 0;
+      let lastY = 0;
+      let strokeColor = 'black';
+      let strokeWidth = 5;
+
+      // Configurar los escuchadores de eventos para pintar
+      canvas.addEventListener('mousedown', function (e) {
+        isPainting = true;
+        lastX = e.offsetX;
+        lastY = e.offsetY;
+      });
+      canvas.addEventListener('mousemove', function (e) {
+        if (isPainting) {
+          ctx.strokeStyle = strokeColor;
+          ctx.lineWidth = strokeWidth;
+          ctx.beginPath();
+          ctx.moveTo(lastX, lastY);
+          ctx.lineTo(e.offsetX, e.offsetY);
+          ctx.stroke();
+          lastX = e.offsetX;
+          lastY = e.offsetY;
+        }
+      });
+      canvas.addEventListener('mouseup', function () {
+        isPainting = false;
+      });
+
+      // Configurar el escuchador de eventos para guardar la imagen
+      const saveButton = document.getElementById('save-button');
+      saveButton.addEventListener('click', function () {
+        // Obtener los datos de imagen del lienzo
+        const data = canvas.toDataURL('image/png');
+
+        // Create a link to the image and "click" it
+        const link = document.createElement('a');
+        link.download = 'my-painted-image.png';
+        link.href = data;
+        link.click();
+      });
+    </script>
